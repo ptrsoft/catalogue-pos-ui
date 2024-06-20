@@ -15,6 +15,7 @@ const Config = {
    FETCH_PURCHASE_ORDER:`${BASE_URL}/users`,
    FETCH_PURCHASE_REQUSTION_LIST:`${BASE_URL}/users`,
    VENDOR_PROFILE:`${BASE_URL}/users`,
+   FETCH_CUSTOMER:`${BASE_URL}/user`,
 };
 
 export default Config;
