@@ -154,7 +154,7 @@ const Sidebar = () => {
             text: page.text,
             href: page.href,
             info: page.info,
-            external: page.external  // Pass external flag to distinguish external links
+            external: page.external  
           })),
         ]}
       />

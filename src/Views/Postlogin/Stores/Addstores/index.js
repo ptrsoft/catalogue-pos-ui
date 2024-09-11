@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ContentLayout, Box } from '@cloudscape-design/components';
+import { ContentLayout, Box, ColumnLayout, SpaceBetween } from '@cloudscape-design/components';
 import Container from "@cloudscape-design/components/container";
 import Header from "@cloudscape-design/components/header";
 import FormField from "@cloudscape-design/components/form-field";
@@ -7,10 +7,12 @@ import Input from "@cloudscape-design/components/input";
 import Button from "@cloudscape-design/components/button";
 import Icon from "@cloudscape-design/components/icon";
 import { useNavigate } from "react-router-dom";
-import Select from "@cloudscape-design/components/select";
 import image from '../../../../assets/img/jpg-svgrepo-com 1.png';
 import { useDispatch } from 'react-redux';
 import { addStore } from '../../../../Redux-Store/Stores/storeSlice';
+import BreadcrumbGroup from "@cloudscape-design/components/breadcrumb-group";
+import Grid from "@cloudscape-design/components/grid";
+import Multiselect from "@cloudscape-design/components/multiselect";
 
 const Addstores = () => {
   const [storeId, setStoreId] = useState('');
@@ -25,6 +27,12 @@ const Addstores = () => {
   const [postalCode, setPostalCode] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [
+    selectedOptions,
+    setSelectedOptions
+  ] = React.useState([
+    
+  ]);
 
   const [errors, setErrors] = useState({
     storeId: '',
@@ -50,7 +58,7 @@ const Addstores = () => {
   const handleConfirm = () => {
     let valid = true;
     const newErrors = {};
-
+  
     if (!storeId) {
       newErrors.storeId = 'Store ID is required.';
       valid = false;
@@ -63,8 +71,8 @@ const Addstores = () => {
       newErrors.storeName = 'Store Name is required.';
       valid = false;
     }
-    if (!gstNumber || !/^[0-9]{15}$/.test(gstNumber)) {
-      newErrors.gstNumber = 'GST Number is required and must be 15 digits long.';
+    if (!gstNumber || !/^[A-Za-z0-9]{15}$/.test(gstNumber)) {
+      newErrors.gstNumber = 'GST Number is required and must be 15 alphanumeric characters.';
       valid = false;
     }
     if (!contactNumber || !/^[0-9]{10}$/.test(contactNumber)) {
@@ -91,13 +99,13 @@ const Addstores = () => {
       newErrors.postalCode = 'Postal Code is required.';
       valid = false;
     }
-    if (!selectedOption) {
-      newErrors.selectedOption = 'Cashier is required.';
+    if (selectedOptions.length === 0) {
+      newErrors.selectedOptions = 'Cashier is required.';
       valid = false;
     }
-
+  
     setErrors(newErrors);
-
+  
     if (valid) {
       const newStore = {
         id: storeId,
@@ -111,21 +119,22 @@ const Addstores = () => {
         state,
         postalCode,
         status: 'Active',
-        cashier: selectedOption ? selectedOption.label : '',
+        cashier: selectedOptions.map(option => option.label).join(', '),
       };
       dispatch(addStore(newStore));
       setIsSubmitted(true);
     }
   };
-
+  
+  
   const handleGoToStores = () => {
     navigate('/app/stores');
   };
 
   const handleChange = (setter, fieldName) => (event) => {
     if (event && typeof event === 'object') {
-      if (event.detail && event.detail.selectedOption) {
-        setter(event.detail.selectedOption);
+      if (event.detail && event.detail.selectedOptions) {
+        setter(event.detail.selectedOptions);
         if (fieldName) {
           setErrors((prevErrors) => ({
             ...prevErrors,
@@ -155,11 +164,31 @@ const Addstores = () => {
       console.error('Unexpected event object:', event);
     }
   };
-
+  
   return (
     <ContentLayout
       headerVariant="high-contrast"
-      header={<Header variant="h3">{isSubmitted ? 'Congratulations' : 'Add here!'}</Header>}
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: "Stores", href: "/app/stores" },
+            { text: "Add Stores", href: "#" },
+          ]}
+          ariaLabel="Breadcrumbs"
+        />
+      }
+      header={<Header variant="h1"
+        description="Add Your Stores"
+        actions=  {isSubmitted && (
+          <Button variant="primary" onClick={handleGoToStores}>
+            Go To Stores
+          </Button>
+        )}
+                 >{isSubmitted ? 'Congratulations' : 'Add Stores'}
+                
+      </Header>
+    }
+      
     >
       {isSubmitted ? (
         <Container>
@@ -175,55 +204,60 @@ const Addstores = () => {
             <h2 style={{ margin: '1rem 0' }}>Success!</h2>
             <p style={{ fontWeight: 'bold' }}>New Store Added Successfully</p>
             <p style={{ marginBottom: '1rem' }}>You can view the newly added store in the "Stores Screen"</p>
-            <Button variant='primary' onClick={handleGoToStores}>Go To Stores</Button>
           </div>
         </Container>
       ) : (
         <Container>
-          <Box
-            padding={{ vertical: 's', horizontal: 's' }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <Header variant='h3'>Add here!</Header>
-              </div>
-              <Box>
-                <button
-                  style={{
-                    backgroundColor: 'white',
-                    color: 'red',
-                    border: '2.5px solid red',
-                    borderRadius: '40%',
-                    height: '30px',
-                    width: '80px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold'
-                  }}
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </button>
-                <Button
+          
+          <div style={{height: "2.8rem"}}>
+              <Box float="left" >
+             <h3>Add Here!</h3>          
+                    </Box>
+              <Box float='right'>
+              <button
+                      style={{
+                          color: 'white',
+                          border: '2px solid red',   
+                          fontWeight: 'bold',
+                          height: '32px', 
+                          width: '100px', 
+                          borderRadius: '16px',
+                          background: 'red',
+                          cursor: 'pointer',
+                          marginRight: '0.5rem'
+                      }}
+                      onClick={handleCancel}
+                    >
+                      Cancel
+                    </button>             
+                       <Button
                   variant="link"
                   onClick={handleConfirm}
                 >
                   Confirm
-                </Button>
-              </Box>
-            </div>
+                </Button>    
+                    </Box>
+                    </div>
+<SpaceBetween size='xxl' >
+<Grid
+      
+      gridDefinition={[
+        { colspan: { default: 6, xxs: 2 } },
+        { colspan: { default: 12, xxs: 9 } }
+      ]}
+    >
+             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+  <img
+    src={image}
+    alt="Generative AI assistant"
+    style={{ height: '80px', width: '80px' }}
+  />
+</div>
 
-            <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between' }}>
-              <img
-                src={image}
-                alt="Generative AI assistant"
-                style={{ height: '100px', width: '100px' }}
-              />
-
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                 <div>
+           <ColumnLayout columns={3} minColumnWidth={100} >
                 <FormField
                   label="Store ID (Generated By Default)"
-                  style={{ width: '100%', marginBottom: '1rem' }}
                   errorText={errors.storeId}
                 >
                   <Input
@@ -231,23 +265,8 @@ const Addstores = () => {
                     onChange={handleChange(setStoreId, 'storeId')}
                   />
                 </FormField>
-
-                <FormField
-                  label="FSSAI Licence"
-                  style={{ width: '100%', marginBottom: '1rem' }}
-                  errorText={errors.fssaiLicence}
-                >
-                  <Input
-                    value={fssaiLicence}
-                    onChange={handleChange(setFssaiLicence, 'fssaiLicence')}
-                  />
-                </FormField>
-              </div>
-
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <FormField
                   label="Store Name"
-                  style={{ width: '100%', marginBottom: '1rem' }}
                   errorText={errors.storeName}
                 >
                   <Input
@@ -255,14 +274,31 @@ const Addstores = () => {
                     onChange={handleChange(setStoreName, 'storeName')}
                   />
                 </FormField>
-
+                <FormField
+  label="Store Contact Number"
+  errorText={errors.contactNumber}
+>
+  <Input
+    value={contactNumber}
+    onChange={handleChange(setContactNumber, 'contactNumber')}
+  />
+</FormField>
+                <FormField
+                  label="FSSAI Licence"
+                  errorText={errors.fssaiLicence}
+                >
+                  <Input
+                    value={fssaiLicence}
+                    onChange={handleChange(setFssaiLicence, 'fssaiLicence')}
+                  />
+                </FormField>
+               
                 <FormField
                   label={
                     <span>
                       GST Number <i>- optional</i>{" "}
                     </span>
                   }
-                  style={{ width: '100%', marginBottom: '1rem' }}
                   errorText={errors.gstNumber}
                 >
                   <Input
@@ -270,64 +306,49 @@ const Addstores = () => {
                     onChange={handleChange(setGstNumber, 'gstNumber')}
                   />
                 </FormField>
-              </div>
+                </ColumnLayout>
+                </div>
+                </Grid>
 
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <FormField
-                  label="Contact Number"
-                  style={{ width: '100%', marginBottom: '1rem' }}
-                  errorText={errors.contactNumber}
-                >
-                  <Input
-                    value={contactNumber}
-                    onChange={handleChange(setContactNumber, 'contactNumber')}
-                  />
-                </FormField>
-              </div>
+                <Grid
+      
+      gridDefinition={[
+        { colspan: { default: 6, xxs: 2 } },
+        { colspan: { default: 12, xxs: 5 } }
+      ]}
+    >
+      <div><h3>Add User!</h3></div>
+            <div>
+            <FormField
+  errorText={errors.selectedOptions}
+>
+  <Multiselect
+    selectedOptions={selectedOptions}
+    onChange={handleChange(setSelectedOptions, 'selectedOptions')}
+    options={[
+      { label: 'Nandini', value: 'Nandini' },
+      { label: 'Dandini', value: 'Dandini' },
+      { label: 'Sagar', value: 'Sagar' },
+      { label: 'Guru', value: 'Guru' },
+    ]}
+    placeholder="Choose option"
+    selectedAriaLabel="Selected"
+  />
+</FormField>
             </div>
+            </Grid>
 
-            <Box
-              padding={{ vertical: 's', horizontal: 's' }}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', width: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Header variant='h3'>Cashier</Header>
-                </div>
-              </div>
-
-              <div style={{ width: '80%', marginLeft: "14%" }}>
-                <FormField errorText={errors.selectedOption}>
-                  <Select
-                    options={[
-                      { label: "Raj kumar", value: "1" },
-                      { label: "john", value: "2" },
-                      { label: "smith johnson", value: "3" },
-                      { label: "roman", value: "4" },
-                      { label: "shaistha samreen", value: "5" }
-                    ]}
-                    onChange={handleChange(setSelectedOption, 'selectedOption')}
-                    selectedOption={selectedOption}
-                  />
-                </FormField>
-              </div>
-            </Box>
-
-            <Box
-              padding={{ vertical: 's', horizontal: 's' }}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', width: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Header variant='h3'>Address</Header>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', marginLeft: '4%' }}>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
-                  <FormField
+            <Grid
+      
+      gridDefinition={[
+        { colspan: { default: 6, xxs: 2 } },
+        { colspan: { default: 12, xxs: 9 } }
+      ]}
+    >
+        <div><h3>Address</h3></div>
+        <ColumnLayout columns={3} minColumnWidth={100}>
+        <FormField
                     label="Address"
-                    style={{ width: '100%', marginBottom: '1rem' }}
                     errorText={errors.address}
                   >
                     <Input
@@ -335,23 +356,9 @@ const Addstores = () => {
                       onChange={handleChange(setAddress, 'address')}
                     />
                   </FormField>
-
-                  <FormField
-                    label="District"
-                    style={{ width: '100%', marginBottom: '1rem' }}
-                    errorText={errors.district}
-                  >
-                    <Input
-                      value={district}
-                      onChange={handleChange(setDistrict, 'district')}
-                    />
-                  </FormField>
-                </div>
-
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  
                   <FormField
                     label="Branch Location"
-                    style={{ width: '100%', marginBottom: '1rem' }}
                     errorText={errors.branchLocation}
                   >
                     <Input
@@ -361,21 +368,7 @@ const Addstores = () => {
                   </FormField>
 
                   <FormField
-                    label="State"
-                    style={{ width: '100%', marginBottom: '1rem' }}
-                    errorText={errors.state}
-                  >
-                    <Input
-                      value={state}
-                      onChange={handleChange(setState, 'state')}
-                    />
-                  </FormField>
-                </div>
-
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <FormField
                     label="Postal Code"
-                    style={{ width: '100%', marginBottom: '1rem' }}
                     errorText={errors.postalCode}
                   >
                     <Input
@@ -383,11 +376,29 @@ const Addstores = () => {
                       onChange={handleChange(setPostalCode, 'postalCode')}
                     />
                   </FormField>
-                </div>
-              </div>
-            </Box>
-            </Box>
+                  <FormField
+                    label="District"
+                    errorText={errors.district}
+                  >
+                    <Input
+                      value={district}
+                      onChange={handleChange(setDistrict, 'district')}
+                    />
+                  </FormField>
+                  <FormField
+                    label="State"
+                    errorText={errors.state}
+                  >
+                    <Input
+                      value={state}
+                      onChange={handleChange(setState, 'state')}
+                    />
+                  </FormField>
 
+                  </ColumnLayout>
+                  </Grid>
+
+                  </SpaceBetween>
           </Container>
         )}
     </ContentLayout>

@@ -1,7 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import config from "Views/Config";
 import { postLoginService } from "Services";
-
 import finishprudcts from "Redux-Store/FinishProductSpecification/dummy/finish_production_spec_list.json";
 import viewattachment from "Redux-Store/FinishProductSpecification/dummy/view_attachments.json";
 import finishproductdetails from "Redux-Store/FinishProductSpecification/dummy/finish_product_details.json";

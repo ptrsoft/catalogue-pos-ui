@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Added useEffect import
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -19,20 +19,31 @@ import {
 
 import { updateStoreStatus } from 'Redux-Store/Stores/storeSlice';
 
-const Stores = ({ stores, updateStoreStatus }) => {
+const Stores = ({ newstore, updateStoreStatus }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(1);
   const [filteringText, setFilteringText] = useState('');
   const [view, setView] = useState('cards');
+  const [filteredItems, setFilteredItems] = useState([]); 
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isEmpty, setIsEmpty] = useState(false); 
   const navigate = useNavigate();
 
-  const filteredItems = stores.filter(item =>
-    item.name.toLowerCase().includes(filteringText.toLowerCase()) ||
-    item.cashier.toLowerCase().includes(filteringText.toLowerCase()) ||
-    item.address.toLowerCase().includes(filteringText.toLowerCase()) ||
-    item.contactNumber.toLowerCase().includes(filteringText.toLowerCase())
-  );
+  useEffect(() => {
+    const filtered = newstore.filter(item =>
+      (item.name || '').toLowerCase().includes(filteringText.toLowerCase()) ||
+      (item.cashier || '').toLowerCase().includes(filteringText.toLowerCase()) ||
+      (item.address || '').toLowerCase().includes(filteringText.toLowerCase()) ||
+      (item.contactNumber || '').toLowerCase().includes(filteringText.toLowerCase())
+    );
+    setFilteredItems(filtered);
+    setIsEmpty(filtered.length === 0);
+  }, [newstore, filteringText]);
 
   const handleAddStoresClick = () => navigate("/app/stores/addstores", { replace: true });
+  const handleViewDetailClick = (storeId) => {
+    navigate("/app/stores/addstores/storedetail", { state: { storeId } });
+  };
+
   const itemsPerPage = 6;
   const startIndex = (currentPageIndex - 1) * itemsPerPage;
   const paginatedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage);
@@ -42,7 +53,11 @@ const Stores = ({ stores, updateStoreStatus }) => {
     updateStoreStatus(item.id, checked ? 'Active' : 'Inactive');
   };
 
-  const [selectedItems, setSelectedItems] = useState([{ name: "Item 2" }]);
+  const empty = (
+    <Box margin={{ vertical: "xs" }} textAlign="center">
+      <b>No Stores</b>
+    </Box>
+  );
 
   return (
     <ContentLayout
@@ -129,104 +144,100 @@ const Stores = ({ stores, updateStoreStatus }) => {
 
           <Box>
             {view === 'cards' ? (
-              <Grid
-                gridDefinition={[
-                  { colspan: { default: 12, xxs: 4 } },
-                  { colspan: { default: 12, xxs: 4 } },
-                  { colspan: { default: 12, xxs: 4 } }
-                ]}
-              >
-                {paginatedItems.map(item => (
-                  <Cards
-                    key={item.id}
-                    ariaLabels={{
-                      itemSelectionLabel: (e, i) => `select ${i.name}`,
-                      selectionGroupLabel: "Item selection"
-                    }}
-                    cardDefinition={{
-                      header: item => (
-                        <Grid
-                          disableGutters
-                          gridDefinition={[
-                            { colspan: 8 },
-                            { colspan: 4 },
-                          ]}
-                        >
-                          <div style={{ fontSize: '12px' }}>Store ID: <strong>{item.id}</strong></div>
-                          <div style={{ fontSize: '12px', display: 'flex' }}>
-                            <p style={{ marginRight: '12%' }}>Status: </p>
-                            <div>
-                              <Toggle
-                                checked={item.status === "Active"}
-                                onChange={({ detail }) => handleToggleChange(item, detail.checked)}
-                                style={{ color: item.status === 'Active' ? '#0972D3' : '#414D5C' }}
-                              />
-                            </div>
-                          </div>
-                        </Grid>
-                      ),
-                      sections: [
-                        {
-                          id: "details",
-                          content: item => (
-                            <div style={{ color: item.status === 'Active' ? 'inherit' : '#414D5C' }}>
-                              <Grid
-                                disableGutters
-                                gridDefinition={[
-                                  { colspan: 8 },
-                                  { colspan: 4 },
-                                ]}
-                              >
-                                <div style={{ display: 'flex' }}>
-                                  <div style={{
-                                    height: '34px',
-                                    width: '40px',
-                                    background: '#7E57C2',
-                                    borderRadius: '5px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '20px',
-                                    fontWeight: 'bold',
-                                    color: 'white'
-                                  }}>
-                                    P
-                                  </div>
-
-                                  <div style={{ marginLeft: '6px' }}>
-                                    <p style={{ fontSize: '15px', fontWeight: 'bold' }}>{item.name}</p>
-                                    <p style={{ fontSize: '12px' }}>Gmail: {item.email}</p>
-                                  </div>
-                                </div>
-                                <div>
-                                  <p style={{ color: '#0972D3', fontWeight: 'bold' }}>{item.address}</p>
-                                  <p><strong>{item.contactNumber}</strong></p>
-                                </div>
-                              </Grid>
-                              <div style={{ margin: 'auto', width: '50%', justifyItems: 'end' }}>
-                                <Button href="#" variant="link">
-                                  View Details
-                                </Button>
+              paginatedItems.length === 0 ? (
+                empty 
+              ) : (
+                <Grid
+                  gridDefinition={[
+                    { colspan: { default: 12, xxs: 4 } },
+                    { colspan: { default: 12, xxs: 4 } },
+                    { colspan: { default: 12, xxs: 4 } }
+                  ]}>
+                  {paginatedItems.map(item => (
+                    <Cards
+                      key={item.id}
+                      ariaLabels={{
+                        itemSelectionLabel: (e, i) => `select ${i.name}`,
+                        selectionGroupLabel: "Item selection"
+                      }}
+                      cardDefinition={{
+                        header: item => (
+                          <Grid
+                            disableGutters
+                            gridDefinition={[
+                              { colspan: 8 },
+                              { colspan: 4 },
+                            ]}
+                          >
+                            <div style={{ fontSize: '12px' }}>Store ID: <strong>{item.id}</strong></div>
+                            <div style={{ fontSize: '12px', display: 'flex' }}>
+                              <p style={{ marginRight: '12%' }}>Status: </p>
+                              <div>
+                                <Toggle
+                                  checked={item.status === "Active"}
+                                  onChange={({ detail }) => handleToggleChange(item, detail.checked)}
+                                  style={{ color: item.status === 'Active' ? '#0972D3' : '#414D5C' }}
+                                />
                               </div>
                             </div>
-                          )
-                        }
-                      ]
-                    }}
-                    cardsPerRow={[{ cards: 1 }]}
-                    items={[item]}
-                    loadingText="Loading resources"
-                    variant="full-page"
-                    empty={
-                      <Box margin={{ vertical: "xs" }} textAlign="center" color="inherit">
-                        <Box margin={{ bottom: "m" }}>
-                          <b>No Stores</b>
-                        </Box>
-                      </Box>
-                    }
-                  />
-                ))}
-              </Grid>
+                          </Grid>
+                        ),
+                        sections: [
+                          {
+                            id: "details",
+                            content: item => (
+                              <div style={{ color: item.status === 'Active' ? 'inherit' : '#414D5C' }}>
+                                <Grid
+                                  disableGutters
+                                  gridDefinition={[
+                                    { colspan: 8 },
+                                    { colspan: 4 },
+                                  ]}
+                                >
+                                  <div style={{ display: 'flex' }}>
+                                    <div style={{
+                                      height: '34px',
+                                      width: '40px',
+                                      background: '#7E57C2',
+                                      borderRadius: '5px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontSize: '20px',
+                                      fontWeight: 'bold',
+                                      color: 'white'
+                                    }}>
+                                      P
+                                    </div>
+
+                                    <div style={{ marginLeft: '6px' }}>
+                                      <p style={{ fontSize: '15px', fontWeight: 'bold' }}>{item.name}</p>
+                                      <p style={{ fontSize: '12px' }}>Gmail: {item.email}</p>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <p style={{ color: '#0972D3', fontWeight: 'bold' }}>{item.address}</p>
+                                    <p><strong>{item.contactNumber}</strong></p>
+                                  </div>
+                                </Grid>
+                                <div style={{ margin: 'auto', width: '50%', justifyItems: 'end' }}>
+                                  <Button variant="link" onClick={() => handleViewDetailClick(item.id)}>
+                                    View Details
+                                  </Button>
+                                </div>
+                              </div>
+                            )
+                          }
+                        ]
+                      }}
+                      cardsPerRow={[{ cards: 1 }]}
+                      items={[item]}
+                      loadingText="Loading resources"
+                      variant="full-page"
+                    />
+                  ))}
+                </Grid>
+              )
             ) : (
               <Table
                 renderAriaLive={({ firstIndex, lastIndex, totalItemsCount }) =>
@@ -247,8 +258,7 @@ const Stores = ({ stores, updateStoreStatus }) => {
                     id: "id",
                     header: "Store ID",
                     cell: item => item.id || "-",
-                    sortingField: "id",
-                    isRowHeader: true
+                    sortingField: "id"
                   },
                   {
                     id: "name",
@@ -290,17 +300,7 @@ const Stores = ({ stores, updateStoreStatus }) => {
                 sortingDisabled
                 wrapLines
                 variant="borderless"
-                empty={
-                  <Box
-                    margin={{ vertical: "xs" }}
-                    textAlign="center"
-                    color="inherit"
-                  >
-                    <SpaceBetween size="m">
-                      <b>No Stores</b>
-                    </SpaceBetween>
-                  </Box>
-                }
+                empty={isEmpty ? empty : null} 
               />
             )}
 
@@ -320,7 +320,7 @@ const Stores = ({ stores, updateStoreStatus }) => {
 }
 
 const mapStateToProps = state => ({
-  stores: state.stores,
+  newstore: state.newstore.stores,
 });
 
 const mapDispatchToProps = dispatch => ({

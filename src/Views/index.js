@@ -3,11 +3,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { PREFIX_APP_PATH, PREFIX_AUTH_PATH } from "./../Config/Config";
 import ViewFpsDetails from "./Postlogin/FinishProductSpecification/ViewFpsDetails";
 import PurchasedOrder from "./Postlogin/FinishProductSpecification/PurchasedOrder";
-// import QuotationCreateFPS from "./Postlogin/Stores/QuotationCreateFPS";
 import ProductDetails from "./Postlogin/FinishProductSpecification/ProductDetails";
 import Addstores from "./Postlogin/Stores/Addstores";
-// import QuatationsForm from "./Postlogin/Stores/QutationForm";
 import Stores from "./Postlogin/Stores";
+import Storedetail from "./Postlogin/Stores/Addstores/Storedetail";
 const Dashboards = lazy(() => import("./Postlogin/Dashboard"));
 const store = lazy(() => import("./Postlogin/Stores"));
 const FinishProductSpecification = lazy(() =>
@@ -51,8 +50,8 @@ const Views = () => {
           />
           <Route
             exact
-            //path={`${PREFIX_APP_PATH}/quotations/quotation-form`}
-            // element={<QuatationsForm />}
+            path={`${PREFIX_APP_PATH}/stores/addstores/storedetail`}
+             element={<Storedetail />}
           />
           <Route
             exact

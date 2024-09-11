@@ -14,7 +14,7 @@ import VendorProfilesSlice from "Redux-Store/Inventory/VendorProfile/VendorProfi
 const store = configureStore({
   reducer: {
     // savedQuotations: QuotationsReducer,
-    stores: storeSlice,
+    newstore: storeSlice,
     finishProductSpecifications: FinishProductSpecificationSlice,
     orders: OrdersSlice,
     customers: CustomersReducer,
